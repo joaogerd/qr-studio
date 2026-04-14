@@ -1,4 +1,4 @@
-# QR Studio Definitivo Modular
+# QR Studio
 
 Projeto React + Vite, sem shadcn, organizado com separação clara de responsabilidades.
 
