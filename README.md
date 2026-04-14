@@ -28,33 +28,37 @@ Projeto React + Vite, sem shadcn, organizado com separação clara de responsabi
 ```text
 src/
 ├── App.jsx
-├── main.jsx
+├── components
+│   ├── ColorSection.jsx
+│   ├── ContentSection.jsx
+│   ├── Hero.jsx
+│   ├── LogoSection.jsx
+│   ├── NotesPanel.jsx
+│   ├── PreviewCard.jsx
+│   ├── StyleSection.jsx
+│   ├── StyleWorkspace.jsx
+│   └── ui.jsx
 ├── index.css
-├── components/
-│   ├── Hero.jsx
-│   ├── PreviewCard.jsx
-│   ├── ContentSection.jsx
-│   ├── ColorSection.jsx
-│   ├── StyleSection.jsx
-│   ├── LogoSection.jsx
-│   ├── NotesPanel.jsx
-│   └── ui.js
-├── qr/
-│   ├── constants.js
-│   ├── qrContent.js
-│   ├── qrRenderer.js
-│   ├── finderStyles.js
-│   └── frames/
-│       ├── index.js
-│       ├── speechFrame.js
-│       ├── badgeFrame.js
-│       ├── simpleFrame.js
-│       ├── doubleFrame.js
-│       ├── ribbonFrame.js
-│       └── ticketFrame.js
-└── utils/
+├── main.jsx
+├── qr
+│   ├── constants.js
+│   ├── finderStyles.js
+│   ├── frames
+│   │   ├── badgeFrame.js
+│   │   ├── doubleFrame.js
+│   │   ├── index.js
+│   │   ├── ribbonFrame.js
+│   │   ├── simpleFrame.js
+│   │   ├── speechFrame.js
+│   │   └── ticketFrame.js
+│   ├── qrContent.js
+│   ├── qrRenderer.js
+│   ├── templateRenderer.js
+│   └── templates.js
+└── utils
     ├── canvas.js
     └── download.js
+
 ```
 
 ## Rodando no Pop!_OS / Ubuntu
