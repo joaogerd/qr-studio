@@ -201,7 +201,7 @@ export default function App() {
 
       <footer className="footer">
         <div className="container footer-inner">
-          QR Studio Definitivo Modular · projeto auto-contido em React + Vite, sem shadcn
+          QR Studio · projeto auto-contido em React + Vite, sem shadcn
         </div>
       </footer>
     </div>
