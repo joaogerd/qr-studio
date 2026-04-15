@@ -1,4 +1,8 @@
-# QR Studio
+
+<p align="center">
+  <img src="docs/images/Logo_QR_STUDIO.png" alt="QR Studio Logo" width="450">
+</p>
+
 
 [![Deploy to GitHub Pages](https://github.com/joaogerd/qr-studio/actions/workflows/deploy.yml/badge.svg)](https://github.com/joaogerd/qr-studio/actions/workflows/deploy.yml)
 [![Live Demo](https://img.shields.io/badge/demo-online-111827?style=flat&logo=githubpages&logoColor=white)](https://joaogerd.github.io/qr-studio/)
@@ -7,6 +11,8 @@
 [![License: LGPL v3](https://img.shields.io/badge/license-LGPL%20v3-0f172a.svg)](https://www.gnu.org/licenses/lgpl-3.0.html)
 
 > Transforme links e dados em QR Codes com alta qualidade visual, prontos para uso institucional, comercial e digital.
+
+# QR Studio
 
 O **QR Studio** é uma aplicação web para criação de QR Codes com foco em **personalização visual, legibilidade e acabamento profissional**. Em vez de apenas gerar um código simples, o projeto permite montar peças completas com identidade visual, molduras, templates, logo central e exportação em imagem, tudo processado diretamente no navegador.
 
