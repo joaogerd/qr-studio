@@ -20,7 +20,6 @@ export function downloadQrPng(options) {
     moduleStyle: state.moduleStyle,
     eyeStyle: state.eyeStyle,
     frameStyle: state.frameStyle,
-    frameLabel: state.frameLabel,
     labelText: state.labelText,
     templateStyle: state.templateStyle,
     showFrame: state.showFrame,

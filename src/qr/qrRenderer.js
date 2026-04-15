@@ -28,7 +28,6 @@ export function renderQrBase(canvas, options) {
     moduleStyle,
     eyeStyle,
     frameStyle,
-    frameLabel,
     showFrame,
     showQuietZone,
     logoDataUrl,
@@ -65,7 +64,7 @@ export function renderQrBase(canvas, options) {
   ctx.fillRect(0, 0, scene.fullWidth, scene.fullHeight);
 
   if (scene.isTemplateCard) {
-    drawTemplateChrome(ctx, scene, labelText || frameLabel || "SCAN ME");
+    drawTemplateChrome(ctx, scene, labelText);
   } else {
     if (showFrame && frameStyle !== "none") {
       drawFrameByType(ctx, frameStyle, scene.fullWidth, scaleFactor, frameColor);
@@ -86,7 +85,7 @@ export function renderQrBase(canvas, options) {
             ? 45 * scaleFactor
             : 60 * scaleFactor;
 
-      ctx.fillText(frameLabel || "SCAN ME", scene.fullWidth / 2, textY);
+      ctx.fillText(labelText, scene.fullWidth / 2, textY);
       ctx.restore();
     }
 

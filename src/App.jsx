@@ -15,7 +15,6 @@ import { downloadQrPng } from "./utils/download.js";
 const INITIAL_STATE = {
   qrType: "url",
   title: "Seu QR Code",
-  frameLabel: "SCAN ME",
   labelText: "SCAN ME",
   templateStyle: "none",
 
@@ -80,7 +79,6 @@ export default function App() {
       moduleStyle: state.moduleStyle,
       eyeStyle: state.eyeStyle,
       frameStyle: state.frameStyle,
-      frameLabel: state.frameLabel,
       labelText: state.labelText,
       templateStyle: state.templateStyle,
       showFrame: state.showFrame,
