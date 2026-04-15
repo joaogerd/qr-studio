@@ -1,21 +1,14 @@
 import React, { useState } from "react";
-import { Palette, Settings2, Image as ImageIcon } from "lucide-react";
+import { Palette, CreditCard, Settings2, Image as ImageIcon } from "lucide-react";
 import ColorSection from "./ColorSection.jsx";
-import StyleSection from "./StyleSection.jsx";
+import CardSection from "./CardSection.jsx";
+import FrameSection from "./FrameSection.jsx";
 import LogoSection from "./LogoSection.jsx";
 
 function cls(...items) {
   return items.filter(Boolean).join(" ");
 }
 
-/**
- * Área interna da aba "Estilo".
- *
- * Responsabilidades:
- * - dividir a configuração visual em subabas menores
- * - evitar um painel longo demais
- * - reaproveitar os componentes já existentes
- */
 export default function StyleWorkspace({ state, setState }) {
   const [subTab, setSubTab] = useState("appearance");
 
@@ -24,6 +17,7 @@ export default function StyleWorkspace({ state, setState }) {
       <div className="subtabs-row">
         {[
           ["appearance", <Palette size={16} />, "Aparência"],
+          ["card", <CreditCard size={16} />, "Card"],
           ["frame", <Settings2 size={16} />, "Frame"],
           ["logo", <ImageIcon size={16} />, "Logo"],
         ].map(([key, icon, label]) => (
@@ -40,9 +34,8 @@ export default function StyleWorkspace({ state, setState }) {
       </div>
 
       {subTab === "appearance" && <ColorSection state={state} setState={setState} />}
-
-      {subTab === "frame" && <StyleSection state={state} setState={setState} />}
-
+      {subTab === "card" && <CardSection state={state} setState={setState} />}
+      {subTab === "frame" && <FrameSection state={state} setState={setState} />}
       {subTab === "logo" && <LogoSection state={state} setState={setState} />}
     </div>
   );
