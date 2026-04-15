@@ -1,12 +1,29 @@
 /**
  * Templates completos de card inspirados nas referências visuais do usuário.
  */
-export const TEMPLATE_STYLES = {
-  none: { name: "Sem template", kind: "standard" },
+
+export const TEMPLATE_KIND = {
+  STANDARD: "standard",
+  CARD: "card",
+};
+
+export const LABEL_STYLE = {
+  PLAIN_BOTTOM: "plain_bottom",
+  PILL_BOTTOM: "pill_bottom",
+  BAR_BOTTOM: "bar_bottom",
+  PILL_TOP: "pill_top",
+  OUTLINE_TOP: "outline_top",
+  PLAIN_TOP: "plain_top",
+  ARROW_TOP: "arrow_top",
+  ARROW_SIDE: "arrow_side",
+};
+
+export const TEMPLATE_STYLES = Object.freeze({
+  none: { name: "Sem template", kind: TEMPLATE_KIND.STANDARD },
 
   classic_pink_blue: {
     name: "Classic Pink / Blue",
-    kind: "card",
+    kind: TEMPLATE_KIND.CARD,
     outerBg: "#2F3C94",
     outerBorder: null,
     panelBg: "#FFFFFF",
@@ -14,7 +31,7 @@ export const TEMPLATE_STYLES = {
     qrColor: "#FF5B73",
     cornerColor: "#FF5B73",
     labelTextColor: "#FFFFFF",
-    labelStyle: "plain_bottom",
+    labelStyle: LABEL_STYLE.PLAIN_BOTTOM,
     outerRadius: 38,
     panelRadius: 22,
   },
@@ -97,7 +114,87 @@ export const TEMPLATE_STYLES = {
     outerRadius: 24,
     panelRadius: 18,
   },
-};
+
+  scanner_minimal: {
+    name: "Scanner Minimal",
+    kind: "card",
+    outerBg: "#FFFFFF",
+    outerBorder: null,
+    panelBg: "#FFFFFF",
+    qrColor: "#111111",
+    cornerColor: "#111111",
+    labelTextColor: "#111111",
+    labelStyle: "plain_bottom",
+    outerRadius: 20,
+    panelRadius: 16,
+  },
+  
+  scanner_top_arrow: {
+    name: "Scanner Top Arrow",
+    kind: "card",
+    outerBg: "#FFFFFF",
+    panelBg: "#111111",
+    qrColor: "#FFFFFF",
+    cornerColor: "#FFFFFF",
+    labelTextColor: "#111111",
+    labelStyle: "arrow_top",
+    outerRadius: 20,
+    panelRadius: 16,
+  },
+  
+  scanner_bottom_bar: {
+    name: "Scanner Bottom Bar",
+    kind: "card",
+    outerBg: "#FFFFFF",
+    panelBg: "#FFFFFF",
+    qrColor: "#111111",
+    cornerColor: "#111111",
+    labelTextColor: "#FFFFFF",
+    labelBg: "#111111",
+    labelStyle: "bar_bottom",
+    outerRadius: 20,
+    panelRadius: 16,
+  },
+  
+  scanner_frame_focus: {
+    name: "Scanner Focus Frame",
+    kind: "card",
+    outerBg: "#FFFFFF",
+    panelBg: "#FFFFFF",
+    qrColor: "#111111",
+    cornerColor: "#111111",
+    labelTextColor: "#111111",
+    labelStyle: "plain_bottom",
+    outerRadius: 20,
+    panelRadius: 16,
+  },
+  
+  scanner_black_card: {
+    name: "Scanner Dark Card",
+    kind: "card",
+    outerBg: "#111111",
+    panelBg: "#111111",
+    qrColor: "#FFFFFF",
+    cornerColor: "#FFFFFF",
+    labelTextColor: "#FFFFFF",
+    labelStyle: "arrow_top",
+    outerRadius: 20,
+    panelRadius: 16,
+  },
+  
+  scanner_arrow_side: {
+    name: "Scanner Arrow Side",
+    kind: "card",
+    outerBg: "#FFFFFF",
+    panelBg: "#FFFFFF",
+    qrColor: "#111111",
+    cornerColor: "#111111",
+    labelTextColor: "#111111",
+    labelStyle: "arrow_side",
+    outerRadius: 20,
+    panelRadius: 16,
+  },
+});
 
 export function getTemplateStyle(templateStyle) {
   return TEMPLATE_STYLES[templateStyle] ?? TEMPLATE_STYLES.none;
