@@ -6,26 +6,22 @@ const CARD_RATIO = {
   height: 1.58,
 };
 
-const CARD_OFFSETS = {
-  x: 16,
-  y: 16,
-  panelInset: 24,
-};
+const DEFAULT_CARD_INSET = 16;
+const DEFAULT_PANEL_INSET = 24;
+const DEFAULT_POINTER_SIZE = 20;
 
-const LABEL_LAYOUTS = {
-  plain_bottom: { x: 24, yFromBottom: 86, widthInset: 48, height: 48 },
-  pill_bottom: { x: 30, yFromBottom: 92, widthInset: 60, height: 46 },
-  bar_bottom: { x: 26, yFromBottom: 88, widthInset: 52, height: 44 },
+const TOP_LABEL_KINDS = new Set([
+  "pill_top",
+  "outline_top",
+  "plain_top",
+  "arrow_top",
+]);
 
-  pill_top: { x: 34, y: 12, widthInset: 68, height: 42 },
-  outline_top: { x: 34, y: 12, widthInset: 68, height: 42 },
-  plain_top: { x: 24, y: 18, widthInset: 48, height: 42 },
-  arrow_top: { x: 24, y: 14, widthInset: 48, height: 44 },
-  arrow_side: { x: 24, y: 16, widthInset: 48, height: 44 },
-};
-
-const TOP_LABEL_STYLES = new Set(["pill_top", "outline_top", "plain_top"]);
-const BOTTOM_COMPACT_PANEL_STYLES = new Set(["pill_bottom", "plain_bottom"]);
+const BOTTOM_LABEL_KINDS = new Set([
+  "plain_bottom",
+  "pill_bottom",
+  "bar_bottom",
+]);
 
 export function buildScene({
   size,
@@ -37,7 +33,13 @@ export function buildScene({
   const template = getTemplateStyle(templateStyle);
 
   if (template.kind !== "card") {
-    return buildStandardScene({ size, scaleFactor, showFrame, frameStyle, template });
+    return buildStandardScene({
+      size,
+      scaleFactor,
+      showFrame,
+      frameStyle,
+      template,
+    });
   }
 
   return buildCardScene({ size, scaleFactor, template });
@@ -59,278 +61,322 @@ function buildStandardScene({ size, scaleFactor, showFrame, frameStyle, template
     cardRect: null,
     panelRect: null,
     labelRect: null,
+    iconRect: null,
+    ctaRect: null,
   };
 }
 
 function buildCardScene({ size, scaleFactor, template }) {
-  const cardWidth = Math.round(size * CARD_RATIO.width * scaleFactor);
-  const cardHeight = Math.round(size * CARD_RATIO.height * scaleFactor);
-  const cardX = CARD_OFFSETS.x * scaleFactor;
-  const cardY = CARD_OFFSETS.y * scaleFactor;
+  const cardCfg = template.card ?? {};
+  const panelCfg = template.panel ?? {};
+  const labelCfg = template.label ?? {};
+  const iconCfg = template.icon ?? {};
+  const ctaCfg = template.cta ?? {};
 
-  const panelInset = CARD_OFFSETS.panelInset * scaleFactor;
-  const pointerSize = 20 * scaleFactor;
+  const cardInset = (cardCfg.inset ?? DEFAULT_CARD_INSET) * scaleFactor;
+  const cardWidth = Math.round(size * (cardCfg.widthRatio ?? CARD_RATIO.width) * scaleFactor);
+  const cardHeight = Math.round(size * (cardCfg.heightRatio ?? CARD_RATIO.height) * scaleFactor);
+  const cardX = cardInset;
+  const cardY = cardInset;
 
-  let panelX = cardX + panelInset;
-  let panelY = cardY + panelInset;
-  let panelWidth = cardWidth - panelInset * 2;
-  let panelHeight = size * 0.98 * scaleFactor;
+  const fullWidth = cardWidth + cardInset * 2;
+  const fullHeight = cardHeight + cardInset * 2;
 
-  if (TOP_LABEL_STYLES.has(template.labelStyle)) {
-    const offset = 52 * scaleFactor;
-    panelY += offset;
-    panelHeight -= offset;
-  }
+  const panelInset = (panelCfg.inset ?? DEFAULT_PANEL_INSET) * scaleFactor;
+  const panelTopExtra = (panelCfg.topExtra ?? 0) * scaleFactor;
+  const panelBottomExtra = (panelCfg.bottomExtra ?? 0) * scaleFactor;
 
-  if (BOTTOM_COMPACT_PANEL_STYLES.has(template.labelStyle)) {
-    panelHeight = size * 0.92 * scaleFactor;
-  }
+  const panelX = cardX + panelInset;
+  const panelY = cardY + panelInset + panelTopExtra;
+  const panelWidth = cardWidth - panelInset * 2;
+  const panelHeight = cardHeight - panelInset * 2 - panelTopExtra - panelBottomExtra;
 
-  const qrBoxSize = Math.min(
-    panelWidth - 48 * scaleFactor,
-    panelHeight - 52 * scaleFactor,
+  const qrPaddingX = (panelCfg.qrPaddingX ?? 22) * scaleFactor;
+  const qrPaddingTop = (panelCfg.qrPaddingTop ?? 22) * scaleFactor;
+  const qrPaddingBottom = (panelCfg.qrPaddingBottom ?? 22) * scaleFactor;
+
+  const qrPixelSize = Math.min(
+    panelWidth - qrPaddingX * 2,
+    panelHeight - qrPaddingTop - qrPaddingBottom,
   );
 
-  const qrX = panelX + (panelWidth - qrBoxSize) / 2;
-  const qrY = panelY + 32 * scaleFactor;
+  const qrX = panelX + (panelWidth - qrPixelSize) / 2 + (panelCfg.qrOffsetX ?? 0) * scaleFactor;
+  const qrY = panelY + qrPaddingTop + (panelCfg.qrOffsetY ?? 0) * scaleFactor;
+
+  const labelRect = createLabelRect({
+    cardX,
+    cardY,
+    cardWidth,
+    cardHeight,
+    scaleFactor,
+    label: labelCfg,
+  });
+
+  const iconRect = createIconRect({
+    cardX,
+    cardY,
+    cardWidth,
+    cardHeight,
+    scaleFactor,
+    icon: iconCfg,
+    labelRect,
+  });
+
+  const ctaRect = createCtaRect({
+    cardX,
+    cardY,
+    cardWidth,
+    cardHeight,
+    scaleFactor,
+    cta: ctaCfg,
+  });
 
   return {
     template,
-    fullWidth: cardWidth + cardX * 2,
-    fullHeight: cardHeight + cardY * 2,
+    fullWidth,
+    fullHeight,
     qrX,
     qrY,
-    qrPixelSize: qrBoxSize,
+    qrPixelSize,
     isTemplateCard: true,
     cardRect: {
       x: cardX,
       y: cardY,
       width: cardWidth,
       height: cardHeight,
-      radius: template.outerRadius * scaleFactor,
-      pointerSize,
+      radius: (cardCfg.radius ?? template.outerRadius ?? 24) * scaleFactor,
+      pointerSize: (panelCfg.pointerSize ?? DEFAULT_POINTER_SIZE) * scaleFactor,
     },
     panelRect: {
       x: panelX,
       y: panelY,
       width: panelWidth,
       height: panelHeight,
-      radius: template.panelRadius * scaleFactor,
-      pointerSize,
+      radius: (panelCfg.radius ?? template.panelRadius ?? 18) * scaleFactor,
+      pointerSize: (panelCfg.pointerSize ?? DEFAULT_POINTER_SIZE) * scaleFactor,
     },
-    labelRect: createLabelRect({
-      labelStyle: template.labelStyle,
-      cardX,
-      cardY,
-      cardWidth,
-      cardHeight,
-      scaleFactor,
-    }),
+    labelRect,
+    iconRect,
+    ctaRect,
   };
 }
 
-function createLabelRect({
-  labelStyle,
-  cardX,
-  cardY,
-  cardWidth,
-  cardHeight,
-  scaleFactor,
-}) {
-  const config = LABEL_LAYOUTS[labelStyle];
-  if (!config) return null;
+function createLabelRect({ cardX, cardY, cardWidth, cardHeight, scaleFactor, label }) {
+  if (!label?.kind || label.kind === "none") return null;
 
-  const x = cardX + config.x * scaleFactor;
-  const width = cardWidth - config.widthInset * scaleFactor;
-  const height = config.height * scaleFactor;
+  const x = cardX + (label.x ?? 24) * scaleFactor;
+  const width = cardWidth - (label.widthInset ?? 48) * scaleFactor;
+  const height = (label.height ?? 42) * scaleFactor;
 
+  let y = cardY + (label.y ?? 0) * scaleFactor;
+
+  if (typeof label.yFromBottom === "number") {
+    y = cardY + cardHeight - label.yFromBottom * scaleFactor;
+  }
+
+  return {
+    kind: label.kind,
+    x,
+    y,
+    width,
+    height,
+    radius: (label.radius ?? 12) * scaleFactor,
+    pointerSize: (label.pointerSize ?? 9) * scaleFactor,
+  };
+}
+
+function createIconRect({ cardX, cardY, cardWidth, cardHeight, scaleFactor, icon, labelRect }) {
+  if (!icon?.kind || icon.kind === "none") return null;
+
+  const width = (icon.width ?? 44) * scaleFactor;
+  const height = (icon.height ?? 28) * scaleFactor;
+
+  let x = cardX + cardWidth / 2 - width / 2;
+  let y = cardY + (icon.y ?? 0) * scaleFactor;
+
+  if (icon.anchor === "below_label" && labelRect) {
+    y = labelRect.y + labelRect.height + (icon.gap ?? 8) * scaleFactor;
+  }
+
+  if (icon.anchor === "top_inside") {
+    y = cardY + (icon.y ?? 18) * scaleFactor;
+  }
+
+  if (icon.anchor === "right_top") {
+    x = cardX + cardWidth - (icon.right ?? 18) * scaleFactor - width;
+    y = cardY + (icon.top ?? 18) * scaleFactor;
+  }
+
+  if (icon.anchor === "left_bottom") {
+    x = cardX + (icon.left ?? 18) * scaleFactor;
+    y = cardY + cardHeight - (icon.bottom ?? 64) * scaleFactor;
+  }
+
+  return {
+    kind: icon.kind,
+    x,
+    y,
+    width,
+    height,
+    lineWidth: (icon.lineWidth ?? 4) * scaleFactor,
+    color: icon.color ?? null,
+  };
+}
+
+function createCtaRect({ cardX, cardY, cardWidth, cardHeight, scaleFactor, cta }) {
+  if (!cta?.enabled) return null;
+
+  const width = (cta.width ?? cardWidth - 52) * scaleFactor;
+  const height = (cta.height ?? 44) * scaleFactor;
+  const x = cardX + (cta.x ?? 26) * scaleFactor;
   const y =
-    typeof config.y === "number"
-      ? cardY + config.y * scaleFactor
-      : cardY + cardHeight - config.yFromBottom * scaleFactor;
+    typeof cta.yFromBottom === "number"
+      ? cardY + cardHeight - cta.yFromBottom * scaleFactor
+      : cardY + (cta.y ?? 0) * scaleFactor;
 
   return {
     x,
     y,
     width,
     height,
-    kind: labelStyle,
+    radius: (cta.radius ?? 10) * scaleFactor,
   };
 }
 
-function drawPanelWithPointer(ctx, rect, fillStyle) {
-  ctx.save();
-  ctx.fillStyle = fillStyle;
+function drawRoundedBox(ctx, rect, fillStyle, strokeStyle = null, lineWidth = 0) {
   roundedRect(ctx, rect.x, rect.y, rect.width, rect.height, rect.radius);
-  ctx.fill();
 
-  const px = rect.x + rect.width / 2;
-  const py = rect.y + rect.height;
-  const ps = rect.pointerSize;
+  if (fillStyle) {
+    ctx.fillStyle = fillStyle;
+    ctx.fill();
+  }
 
-  ctx.beginPath();
-  ctx.moveTo(px - ps, py);
-  ctx.lineTo(px, py + ps);
-  ctx.lineTo(px + ps, py);
-  ctx.closePath();
-  ctx.fill();
-  ctx.restore();
+  if (strokeStyle) {
+    ctx.strokeStyle = strokeStyle;
+    ctx.lineWidth = lineWidth;
+    roundedRect(ctx, rect.x, rect.y, rect.width, rect.height, rect.radius);
+    ctx.stroke();
+  }
 }
 
-function applyCenteredText(ctx, { text, x, y, fontSize, color }) {
+function drawPanel(ctx, panelRect, template) {
+  const panel = template.panel ?? {};
+  const fill = panel.fill ?? template.panelBg ?? null;
+  const stroke = panel.stroke ?? null;
+  const lineWidth = panel.strokeWidth ?? 0;
+
+  if (panel.variant === "none") return;
+
+  if (panel.variant === "gradient" && Array.isArray(template.panelGradient)) {
+    const gradient = ctx.createLinearGradient(
+      panelRect.x,
+      panelRect.y,
+      panelRect.x + panelRect.width,
+      panelRect.y + panelRect.height,
+    );
+    gradient.addColorStop(0, template.panelGradient[0]);
+    gradient.addColorStop(1, template.panelGradient[1]);
+    drawRoundedBox(ctx, panelRect, gradient);
+    return;
+  }
+
+  if (panel.variant === "outline") {
+    drawRoundedBox(ctx, panelRect, fill, stroke, lineWidth);
+    return;
+  }
+
+  drawRoundedBox(ctx, panelRect, fill, stroke, lineWidth);
+}
+
+function drawCenteredText(ctx, { text, x, y, color, size, weight = 700 }) {
   ctx.fillStyle = color;
-  ctx.font = `700 ${Math.round(fontSize)}px Inter, Arial, sans-serif`;
+  ctx.font = `${weight} ${Math.round(size)}px Inter, Arial, sans-serif`;
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
   ctx.fillText(text, x, y);
 }
 
-function drawRoundedLabel(ctx, labelRect, { fill, stroke, radius = 12, lineWidth = 3 }) {
-  if (fill) {
-    ctx.fillStyle = fill;
-    roundedRect(ctx, labelRect.x, labelRect.y, labelRect.width, labelRect.height, radius);
-    ctx.fill();
-  }
-
-  if (stroke) {
-    ctx.strokeStyle = stroke;
-    ctx.lineWidth = lineWidth;
-    roundedRect(ctx, labelRect.x, labelRect.y, labelRect.width, labelRect.height, radius);
-    ctx.stroke();
-  }
-}
-
-function drawDownPointer(ctx, { x, y, size, fill, stroke, lineWidth = 3 }) {
-  ctx.fillStyle = fill;
-  ctx.beginPath();
-  ctx.moveTo(x - size, y);
-  ctx.lineTo(x, y + size);
-  ctx.lineTo(x + size, y);
-  ctx.closePath();
-  ctx.fill();
-
-  if (stroke) {
-    ctx.strokeStyle = stroke;
-    ctx.lineWidth = lineWidth;
-    ctx.beginPath();
-    ctx.moveTo(x - size, y);
-    ctx.lineTo(x, y + size);
-    ctx.lineTo(x + size, y);
-    ctx.stroke();
-  }
-}
-
-function drawLabel(ctx, template, labelRect, labelText) {
+function drawLabel(ctx, labelRect, template, labelText) {
   if (!labelRect) return;
+
+  const label = template.label ?? {};
+  const textColor = label.textColor ?? template.labelTextColor ?? "#111111";
+  const fill = label.fill ?? template.labelBg ?? null;
+  const stroke = label.stroke ?? template.labelBorder ?? null;
+  const fontScale = label.fontScale ?? 0.58;
 
   const centerX = labelRect.x + labelRect.width / 2;
   const centerY = labelRect.y + labelRect.height / 2;
-  const textColor = template.labelTextColor || "#FFFFFF";
 
   switch (labelRect.kind) {
-    case "pill_bottom":
     case "pill_top":
-    case "outline_top": {
-      drawRoundedLabel(ctx, labelRect, {
-        fill: template.labelBg,
-        stroke: labelRect.kind === "outline_top" ? template.labelBorder : null,
-        radius: 12,
-        lineWidth: 3,
-      });
+    case "pill_bottom": {
+      drawRoundedBox(ctx, labelRect, fill, null, 0);
 
-      drawDownPointer(ctx, {
-        x: centerX,
-        y: labelRect.y + labelRect.height,
-        size: 9,
-        fill: template.labelBg || "#FFFFFF",
-        stroke: labelRect.kind === "outline_top" ? template.labelBorder : null,
-        lineWidth: 3,
-      });
+      if (label.pointer !== false) {
+        drawDownTriangle(ctx, {
+          x: centerX,
+          y: labelRect.y + labelRect.height,
+          size: labelRect.pointerSize,
+          fill: fill || "#FFFFFF",
+        });
+      }
 
-      applyCenteredText(ctx, {
+      drawCenteredText(ctx, {
         text: labelText,
         x: centerX,
         y: centerY + 1,
-        fontSize: labelRect.height * 0.56,
         color: textColor,
+        size: labelRect.height * fontScale,
+      });
+      return;
+    }
+
+    case "outline_top": {
+      drawRoundedBox(ctx, labelRect, fill, stroke, label.strokeWidth ?? 3);
+
+      if (label.pointer !== false) {
+        drawDownTriangle(ctx, {
+          x: centerX,
+          y: labelRect.y + labelRect.height,
+          size: labelRect.pointerSize,
+          fill: fill || "#FFFFFF",
+          stroke,
+          lineWidth: label.strokeWidth ?? 3,
+        });
+      }
+
+      drawCenteredText(ctx, {
+        text: labelText,
+        x: centerX,
+        y: centerY + 1,
+        color: textColor,
+        size: labelRect.height * fontScale,
       });
       return;
     }
 
     case "bar_bottom": {
-      drawRoundedLabel(ctx, labelRect, {
-        fill: template.labelBg || "#111111",
-        radius: 10,
-      });
+      drawRoundedBox(ctx, labelRect, fill || "#111111", null, 0);
 
-      applyCenteredText(ctx, {
+      drawCenteredText(ctx, {
         text: labelText,
         x: centerX,
         y: centerY + 1,
-        fontSize: labelRect.height * 0.56,
         color: textColor,
+        size: labelRect.height * (label.fontScale ?? 0.56),
       });
-      return;
-    }
-
-    case "arrow_top": {
-      applyCenteredText(ctx, {
-        text: labelText,
-        x: centerX,
-        y: centerY,
-        fontSize: labelRect.height * 0.62,
-        color: template.labelTextColor || "#111111",
-      });
-
-      drawDownPointer(ctx, {
-        x: centerX,
-        y: labelRect.y + labelRect.height,
-        size: 12,
-        fill: template.labelTextColor || "#111111",
-      });
-      return;
-    }
-
-    case "arrow_side": {
-      const color = template.labelTextColor || "#111111";
-
-      applyCenteredText(ctx, {
-        text: labelText,
-        x: labelRect.x + labelRect.width * 0.42,
-        y: centerY,
-        fontSize: labelRect.height * 0.58,
-        color,
-      });
-
-      const x = labelRect.x + labelRect.width - 18;
-      const y = labelRect.y + 8;
-
-      ctx.strokeStyle = color;
-      ctx.fillStyle = color;
-      ctx.lineWidth = 2.5;
-
-      ctx.beginPath();
-      ctx.moveTo(x, y);
-      ctx.quadraticCurveTo(x + 20, y + 18, x - 8, y + 38);
-      ctx.stroke();
-
-      ctx.beginPath();
-      ctx.moveTo(x - 8, y + 38);
-      ctx.lineTo(x - 1, y + 31);
-      ctx.lineTo(x + 2, y + 40);
-      ctx.closePath();
-      ctx.fill();
       return;
     }
 
     case "plain_top":
     case "plain_bottom": {
-      applyCenteredText(ctx, {
+      drawCenteredText(ctx, {
         text: labelText,
         x: centerX,
         y: centerY,
-        fontSize: labelRect.height * 0.6,
-        color: template.labelTextColor || "#111111",
+        color: textColor,
+        size: labelRect.height * fontScale,
       });
       return;
     }
@@ -340,64 +386,193 @@ function drawLabel(ctx, template, labelRect, labelText) {
   }
 }
 
-function drawCardBackground(ctx, template, cardRect) {
-  if (template.outerBg) {
-    ctx.fillStyle = template.outerBg;
-    roundedRect(ctx, cardRect.x, cardRect.y, cardRect.width, cardRect.height, cardRect.radius);
+function drawDownTriangle(ctx, { x, y, size, fill, stroke = null, lineWidth = 0 }) {
+  ctx.beginPath();
+  ctx.moveTo(x - size, y);
+  ctx.lineTo(x, y + size);
+  ctx.lineTo(x + size, y);
+  ctx.closePath();
+
+  if (fill) {
+    ctx.fillStyle = fill;
     ctx.fill();
   }
 
-  if (template.outerBorder) {
-    ctx.strokeStyle = template.outerBorder;
-    ctx.lineWidth = 4;
-    roundedRect(ctx, cardRect.x, cardRect.y, cardRect.width, cardRect.height, cardRect.radius);
+  if (stroke) {
+    ctx.strokeStyle = stroke;
+    ctx.lineWidth = lineWidth;
     ctx.stroke();
   }
 }
 
-function drawPanel(ctx, template, panelRect) {
-  if (template.panelGradient) {
-    const gradient = ctx.createLinearGradient(
-      panelRect.x,
-      panelRect.y,
-      panelRect.x + panelRect.width,
-      panelRect.y + panelRect.height,
-    );
-    gradient.addColorStop(0, template.panelGradient[0]);
-    gradient.addColorStop(1, template.panelGradient[1]);
-    drawPanelWithPointer(ctx, panelRect, gradient);
+function drawArrowDownIcon(ctx, iconRect, color) {
+  const cx = iconRect.x + iconRect.width / 2;
+  const top = iconRect.y;
+  const bottom = iconRect.y + iconRect.height;
+  const shaftWidth = iconRect.width * 0.24;
+  const headWidth = iconRect.width * 0.9;
+  const headHeight = iconRect.height * 0.42;
+  const shaftBottom = bottom - headHeight;
+
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  ctx.moveTo(cx - shaftWidth / 2, top);
+  ctx.lineTo(cx + shaftWidth / 2, top);
+  ctx.lineTo(cx + shaftWidth / 2, shaftBottom);
+  ctx.lineTo(cx + headWidth / 2, shaftBottom);
+  ctx.lineTo(cx, bottom);
+  ctx.lineTo(cx - headWidth / 2, shaftBottom);
+  ctx.lineTo(cx - shaftWidth / 2, shaftBottom);
+  ctx.closePath();
+  ctx.fill();
+}
+
+function drawCurvedArrowIcon(ctx, iconRect, color, lineWidth) {
+  const x = iconRect.x;
+  const y = iconRect.y;
+  const w = iconRect.width;
+  const h = iconRect.height;
+
+  ctx.strokeStyle = color;
+  ctx.fillStyle = color;
+  ctx.lineWidth = lineWidth;
+  ctx.lineCap = "round";
+  ctx.lineJoin = "round";
+
+  ctx.beginPath();
+  ctx.moveTo(x + w * 0.8, y + h * 0.1);
+  ctx.quadraticCurveTo(x + w * 1.02, y + h * 0.4, x + w * 0.72, y + h * 0.78);
+  ctx.quadraticCurveTo(x + w * 0.58, y + h * 0.94, x + w * 0.42, y + h * 0.92);
+  ctx.stroke();
+
+  ctx.beginPath();
+  ctx.moveTo(x + w * 0.74, y + h * 0.78);
+  ctx.lineTo(x + w * 0.6, y + h * 0.72);
+  ctx.lineTo(x + w * 0.68, y + h * 0.9);
+  ctx.closePath();
+  ctx.fill();
+}
+
+function drawIcon(ctx, iconRect, template) {
+  if (!iconRect) return;
+
+  const icon = template.icon ?? {};
+  const color = icon.color ?? template.labelTextColor ?? "#111111";
+
+  switch (iconRect.kind) {
+    case "arrow_down":
+      drawArrowDownIcon(ctx, iconRect, color);
+      return;
+    case "arrow_curve":
+      drawCurvedArrowIcon(ctx, iconRect, color, iconRect.lineWidth);
+      return;
+    default:
+      return;
+  }
+}
+
+function drawCta(ctx, ctaRect, template, labelText) {
+  if (!ctaRect) return;
+
+  const cta = template.cta ?? {};
+  const text = cta.text ?? labelText;
+  const bg = cta.fill ?? "#111111";
+  const color = cta.textColor ?? "#FFFFFF";
+
+  drawRoundedBox(ctx, ctaRect, bg, null, 0);
+
+  drawCenteredText(ctx, {
+    text,
+    x: ctaRect.x + ctaRect.width / 2,
+    y: ctaRect.y + ctaRect.height / 2 + 1,
+    color,
+    size: ctaRect.height * (cta.fontScale ?? 0.56),
+  });
+}
+
+function drawCard(ctx, cardRect, template) {
+  const card = template.card ?? {};
+  const fill = card.fill ?? template.outerBg ?? null;
+  const stroke = card.stroke ?? template.outerBorder ?? null;
+  const strokeWidth = card.strokeWidth ?? 4;
+
+  if (fill || stroke) {
+    drawRoundedBox(ctx, cardRect, fill, stroke, strokeWidth);
+  }
+}
+
+function drawPanelFrameOverlay(ctx, scene) {
+  const { template, panelRect } = scene;
+  const frame = template.frame ?? {};
+  if (!frame.type || frame.type === "none") return;
+
+  const color = frame.color ?? template.cornerColor ?? template.qrColor ?? "#111111";
+  const lineWidth = frame.lineWidth ?? Math.max(3, scene.qrPixelSize * 0.03);
+
+  if (frame.type === "corners") {
+    drawCornerMarks(ctx, {
+      x: scene.qrX,
+      y: scene.qrY,
+      size: scene.qrPixelSize,
+      color,
+      lineWidth,
+      lengthRatio: frame.lengthRatio ?? 0.18,
+      insetRatio: frame.insetRatio ?? 0.02,
+    });
     return;
   }
 
-  if (template.panelBg) {
-    drawPanelWithPointer(ctx, panelRect, template.panelBg);
+  if (frame.type === "panel_outline") {
+    ctx.save();
+    ctx.strokeStyle = color;
+    ctx.lineWidth = lineWidth;
+    roundedRect(
+      ctx,
+      panelRect.x,
+      panelRect.y,
+      panelRect.width,
+      panelRect.height,
+      panelRect.radius,
+    );
+    ctx.stroke();
+    ctx.restore();
+    return;
   }
 }
 
 export function drawTemplateChrome(ctx, scene, labelText = "SCAN ME") {
-  const { template, cardRect, panelRect, labelRect, qrX, qrY, qrPixelSize } = scene;
   if (!scene.isTemplateCard) return;
+
+  const { template, cardRect, panelRect, labelRect, iconRect, ctaRect } = scene;
 
   ctx.save();
 
-  drawCardBackground(ctx, template, cardRect);
-  drawPanel(ctx, template, panelRect);
-  drawLabel(ctx, template, labelRect, labelText);
+  drawCard(ctx, cardRect, template);
+  drawPanel(ctx, panelRect, template);
+  drawLabel(ctx, labelRect, template, labelText);
+  drawIcon(ctx, iconRect, template);
+  drawCta(ctx, ctaRect, template, labelText);
+  drawPanelFrameOverlay(ctx, scene);
 
-  drawCornerMarks(ctx, {
-    x: qrX,
-    y: qrY,
-    size: qrPixelSize,
-    color: template.cornerColor || template.qrColor || "#FFFFFF",
-    lineWidth: Math.max(3, qrPixelSize * 0.025),
-  });
+  if (template.showDefaultCorners) {
+    drawCornerMarks(ctx, {
+      x: scene.qrX,
+      y: scene.qrY,
+      size: scene.qrPixelSize,
+      color: template.cornerColor || template.qrColor || "#FFFFFF",
+      lineWidth: Math.max(3, scene.qrPixelSize * 0.025),
+    });
+  }
 
   ctx.restore();
 }
 
-export function drawCornerMarks(ctx, { x, y, size, color, lineWidth }) {
-  const mark = size * 0.14;
-  const inset = size * 0.03;
+export function drawCornerMarks(
+  ctx,
+  { x, y, size, color, lineWidth, lengthRatio = 0.14, insetRatio = 0.03 },
+) {
+  const mark = size * lengthRatio;
+  const inset = size * insetRatio;
 
   ctx.save();
   ctx.strokeStyle = color;
