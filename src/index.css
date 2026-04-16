@@ -204,7 +204,7 @@ button { cursor: pointer; }
   margin-bottom: 24px;
 }
 
-.subtabs-row { grid-template-columns: repeat(3, 1fr); }
+.subtabs-row { grid-template-columns: repeat(4, 1fr); }
 
 @media (max-width: 780px) {
   .tabs-row { grid-template-columns: repeat(2, 1fr); }
